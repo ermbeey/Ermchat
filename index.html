@@ -1,1 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ermchat — code, files & chat</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">e</div>
+      <h1>ermchat</h1>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-btn" data-view="dashboard">Dashboard</button>
+      <button class="nav-btn" data-view="snippets">Code</button>
+      <button class="nav-btn" data-view="files">Files</button>
+      <button class="nav-btn" data-view="contacts">Contacts</button>
+      <button class="nav-btn" data-view="chat">Chat</button>
+      <button class="nav-btn" data-view="settings">Settings</button>
+      <button class="nav-btn danger" id="logoutBtn" title="Sign out">Logout</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- AUTH GATE -->
+    <section id="authGate" class="card auth-card">
+      <div class="tabs">
+        <button class="tab active" data-tab="loginTab">Login</button>
+        <button class="tab" data-tab="signupTab">Sign Up</button>
+      </div>
+
+      <div id="loginTab" class="tabpanel active">
+        <form id="loginForm" class="grid">
+          <label>Username
+            <input required id="loginUsername" autocomplete="username" />
+          </label>
+          <label>Password
+            <input type="password" required id="loginPassword" autocomplete="current-password" />
+          </label>
+          <button class="primary">Log In</button>
+        </form>
+      </div>
+
+      <div id="signupTab" class="tabpanel">
+        <form id="signupForm" class="grid">
+          <label>Display Name
+            <input required id="signupDisplayName" />
+          </label>
+          <label>Username (unique)
+            <input required id="signupUsername" autocomplete="username" />
+          </label>
+          <label>Password
+            <input type="password" required id="signupPassword" autocomplete="new-password" />
+          </label>
+          <button class="primary">Create Account</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- APP VIEWS -->
+    <section id="app" class="app hidden">
+
+      <!-- DASHBOARD -->
+      <section id="view-dashboard" class="view">
+        <div class="grid two">
+          <div class="card">
+            <h2>Welcome, <span id="userDisplayName"></span> (@<span id="userUsername"></span>)</h2>
+            <p>Store code snippets, upload files, add contacts by their <strong>ermchat username</strong>, and chat or share files. All data is stored locally in your browser.</p>
+            <div class="row gap">
+              <button class="primary" data-goto="snippets">Create Snippet</button>
+              <button class="primary" data-goto="files">Upload Files</button>
+              <button class="primary" data-goto="contacts">Add Contacts</button>
+              <button class="primary" data-goto="chat">Open Chat</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Quick Stats</h3>
+            <ul class="stats">
+              <li><span id="statSnippets">0</span> snippets</li>
+              <li><span id="statFiles">0</span> files</li>
+              <li><span id="statContacts">0</span> contacts</li>
+              <li><span id="statMessages">0</span> messages</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <div class="card">
+            <h3>Recent Snippets</h3>
+            <ul id="recentSnippets" class="list"></ul>
+          </div>
+          <div class="card">
+            <h3>Recent Files</h3>
+            <ul id="recentFiles" class="list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- SNIPPETS -->
+      <section id="view-snippets" class="view hidden">
+        <div class="card">
+          <div class="row between">
+            <h2>Code Snippets</h2>
+            <div class="row gap">
+              <button id="newSnippetBtn" class="primary">New</button>
+              <input id="snippetSearch" placeholder="Search…" />
+            </div>
+          </div>
+          <div class="grid two">
+            <form id="snippetForm" class="stack">
+              <input type="hidden" id="snippetId" />
+              <label>Title
+                <input id="snippetTitle" required />
+              </label>
+              <label>Language
+                <select id="snippetLang">
+                  <option>plaintext</option>
+                  <option>html</option>
+                  <option>css</option>
+                  <option>javascript</option>
+                  <option>python</option>
+                  <option>c</option>
+                  <option>cpp</option>
+                  <option>java</option>
+                  <option>go</option>
+                  <option>rust</option>
+                </select>
+              </label>
+              <label>Code
+                <textarea id="snippetCode" rows="12" spellcheck="false"></textarea>
+              </label>
+              <div class="row gap">
+                <button class="primary" id="saveSnippetBtn">Save</button>
+                <button type="button" id="deleteSnippetBtn" class="danger ghost">Delete</button>
+                <button type="button" id="shareSnippetBtn">Share to Contact</button>
+                <button type="button" id="copySnippetBtn">Copy</button>
+                <button type="button" id="downloadSnippetBtn">Download</button>
+              </div>
+            </form>
+
+            <div>
+              <ul id="snippetList" class="list selectable"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FILES -->
+      <section id="view-files" class="view hidden">
+        <div class="card">
+          <div class="row between">
+            <h2>Files</h2>
+            <div class="row gap">
+              <label class="file-btn">
+                <input id="fileInput" type="file" multiple />
+                Upload
+              </label>
+              <button id="exportAllBtn">Export All (JSON)</button>
+              <label class="file-btn">
+                <input id="importAllInput" type="file" accept="application/json" />
+                Import
+              </label>
+            </div>
+          </div>
+
+          <div id="dropZone" class="drop">Drag & Drop files here</div>
+          <ul id="fileList" class="list selectable"></ul>
+
+          <div class="row gap">
+            <button id="downloadFileBtn">Download</button>
+            <button id="deleteFileBtn" class="danger ghost">Delete</button>
+            <button id="shareFileBtn">Share to Contact</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACTS -->
+      <section id="view-contacts" class="view hidden">
+        <div class="card">
+          <h2>Contacts</h2>
+          <form id="addContactForm" class="row gap">
+            <input id="addContactUsername" placeholder="Add by @username" required />
+            <button class="primary">Add</button>
+          </form>
+          <ul id="contactList" class="list selectable"></ul>
+          <div class="row gap">
+            <button id="removeContactBtn" class="danger ghost">Remove</button>
+            <button id="openChatFromContactsBtn">Open Chat</button>
+          </div>
+          <p class="muted small">Note: In this demo, contacts must exist as users on <em>this same browser</em>. For multi-user across the internet, plug in a backend later.</p>
+        </div>
+      </section>
+
+      <!-- CHAT -->
+      <section id="view-chat" class="view hidden">
+        <div class="grid two">
+          <div class="card">
+            <h3>Conversations</h3>
+            <ul id="conversationList" class="list selectable"></ul>
+          </div>
+          <div class="card chat-area">
+            <div class="row between">
+              <h3 id="chatWith">Select a conversation</h3>
+              <div class="row gap">
+                <label class="file-btn small">
+                  <input id="attachFileInput" type="file" />
+                  Attach File
+                </label>
+                <select id="attachSnippetSelect">
+                  <option value="">Attach Snippet…</option>
+                </select>
+              </div>
+            </div>
+            <div id="messagePane" class="messages"></div>
+            <form id="messageForm" class="row gap">
+              <input id="messageInput" placeholder="Type a message…" />
+              <button class="primary">Send</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="view-settings" class="view hidden">
+        <div class="card">
+          <h2>Settings</h2>
+          <form id="profileForm" class="grid two">
+            <label>Display Name
+              <input id="profileDisplayName" />
+            </label>
+            <label>Password (optional)
+              <input type="password" id="profilePassword" placeholder="New password" />
+            </label>
+            <button class="primary">Save Profile</button>
+          </form>
+          <hr />
+          <div class="grid two">
+            <div>
+              <h3>Data</h3>
+              <div class="row gap">
+                <button id="exportUserBtn">Export My Data</button>
+                <label class="file-btn">
+                  <input id="importUserInput" type="file" accept="application/json" />
+                  Import My Data
+                </label>
+              </div>
+            </div>
+            <div>
+              <h3>Danger Zone</h3>
+              <button id="deleteAccountBtn" class="danger">Delete My Account</button>
+            </div>
+          </div>
+          <p class="muted small">All data lives locally in your browser (localStorage + IndexedDB). Clearing site data will remove it.</p>
+        </div>
+      </section>
+
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>ermchat — demo build (static, client-only). © <span id="year"></span></p>
+  </footer>
+
+  <template id="messageTpl">
+    <div class="msg">
+      <div class="meta"><span class="from"></span> • <span class="time"></span></div>
+      <div class="body"></div>
+      <div class="attachments"></div>
+    </div>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
 
